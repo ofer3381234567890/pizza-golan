@@ -35,6 +35,12 @@
             transition: transform 0.2s;
             transform: translateX(-50%);
         }
+        @media (max-width: 768px) {
+            #player {
+                width: 80px;
+                height: 80px;
+            }
+        }
         .bullet {
             position: absolute;
             width: 10px;
@@ -49,29 +55,30 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
-        #newGameButton {
+        #newGameButton, #startGameButton {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: white;
-            border: none;
-            cursor: pointer;
-            display: none;
-            z-index: 1; /* Ensure it's above other elements */
-        }
-        #startGameButton {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             padding: 20px 40px;
             font-size: 24px;
             background-color: white;
             border: none;
             cursor: pointer;
-            z-index: 1; /* Ensure it's above other elements */
+            z-index: 1;
+        }
+        #newGameButton {
+            top: 20px;
+            right: 20px;
+            display: none;
+        }
+        #startGameButton {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @media (max-width: 768px) {
+            #newGameButton, #startGameButton {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
         }
         #score {
             position: fixed;
@@ -82,7 +89,7 @@
             background-color: orange;
             color: white;
             border: none;
-            z-index: 1; /* Ensure it's above other elements */
+            z-index: 1;
         }
         #loadingMessage {
             position: fixed;
@@ -95,7 +102,7 @@
             color: black;
             border: none;
             display: none;
-            z-index: 1; /* Ensure it's above other elements */
+            z-index: 1;
         }
         #openingSlideshow {
             position: fixed;
@@ -121,9 +128,8 @@
             height: 100vh;
             background-color: black;
             display: none;
-            z-index: 101; /* Higher z-index than openingSlideshow */
+            z-index: 101;
         }
-        /* Background image for phone */
         @media (max-aspect-ratio: 9/16) {
             body, html {
                 background-image: url('9_16bk.png');
@@ -147,6 +153,12 @@
             }
         }
     </style>
+    <link rel="preload" href="pizza.svg" as="image">
+    <link rel="preload" href="bad.svg" as="image">
+    <link rel="preload" href="explosion.gif" as="image">
+    <link rel="preload" href="music.mp3" as="audio">
+    <link rel="preload" href="music_end.mp3" as="audio">
+    <link rel="preload" href="end9.mp4" as="video">
 </head>
 <body>
     <div id="gameContainer">
@@ -158,7 +170,6 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- Slideshow for opening -->
     <div id="openingSlideshow">
         <img src="open0.png">
         <img src="open1.png">
@@ -170,7 +181,6 @@
         <img src="open7.png">
     </div>
 
-    <!-- Video for ending -->
     <video id="endingVideo" controls style="display: none;">
         <source src="end9.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -212,8 +222,8 @@
             while (aliens.length > 0) {
                 aliens.pop().remove();
             }
-            backgroundMusic.currentTime = 0; // Reset music to start
-            backgroundMusic.play(); // Start background music
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
         });
 
         function playOpeningSlideshow() {
@@ -226,35 +236,34 @@
                 images[index].style.display = 'none';
                 index = (index + 1) % images.length;
                 images[index].style.display = 'block';
-            }, 10000 / images.length); // 10 seconds divided by number of images
+            }, 10000 / images.length);
             setTimeout(() => {
                 clearInterval(interval);
                 openingSlideshow.style.display = 'none';
                 loadingMessage.style.display = 'none';
                 gameRunning = true;
-            }, 10000); // 10 seconds delay
+            }, 10000);
         }
 
         function playEndingVideo() {
             endingVideo.style.display = 'block';
             endingVideo.play();
-            gameContainer.style.display = 'none'; // Hide game container
-            scoreDisplay.style.display = 'none'; // Hide score display
-            newGameButton.style.display = 'block'; // Show new game button
-            backgroundMusic.src = "music_end.mp3"; // Change to end game music
-            backgroundMusic.play(); // Start end game music
+            gameContainer.style.display = 'none';
+            scoreDisplay.style.display = 'none';
+            newGameButton.style.display = 'block';
+            backgroundMusic.src = "music_end.mp3";
+            backgroundMusic.play();
             endingVideo.onended = () => {
                 endingVideo.style.display = 'none';
                 gameContainer.style.display = 'block';
                 scoreDisplay.style.display = 'block';
                 newGameButton.style.display = 'none';
                 backgroundMusic.src = "music.mp3";
-                backgroundMusic.loop = true; // Loop background music
-                backgroundMusic.play(); // Restart background music
+                backgroundMusic.loop = true;
+                backgroundMusic.play();
             };
         }
 
-        // Move player with mouse or touch
         document.addEventListener('mousemove', movePlayer);
         document.addEventListener('touchmove', movePlayer);
 
@@ -265,7 +274,6 @@
             }
         }
 
-        // Shoot on click or touch
         document.addEventListener('click', shoot);
         document.addEventListener('touchstart', shoot);
 
@@ -274,7 +282,7 @@
                 const bullet = document.createElement('div');
                 bullet.className = 'bullet';
                 bullet.style.left = (player.offsetLeft + player.offsetWidth / 2 - 5) + 'px';
-                bullet.style.bottom = '150px'; // Adjusted position for larger player
+                bullet.style.bottom = '150px';
                 gameContainer.appendChild(bullet);
                 bullets.push(bullet);
 
@@ -300,7 +308,6 @@
             }
         }
 
-        // Spawn aliens every second
         setInterval(() => {
             if (gameRunning) {
                 const alien = document.createElement('div');
@@ -311,14 +318,12 @@
                 aliens.push(alien);
 
                 const moveAlien = setInterval(() => {
-                    alien.style.top = (parseInt(alien.style.top) + 2) + 'px'; // Adjusted speed
+                    alien.style.top = (parseInt(alien.style.top) + 2) + 'px';
                     if (parseInt(alien.style.top) > window.innerHeight) {
                         clearInterval(moveAlien);
                         alien.remove();
                         aliens = aliens.filter(a => a !== alien);
                     }
-
-                    // Check collision with player
                     if (isColliding(player, alien)) {
                         handleCollision();
                     }
