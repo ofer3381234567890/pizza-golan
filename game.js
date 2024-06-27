@@ -60,18 +60,21 @@ function playEndingVideo() {
     endingVideo.play();
     gameContainer.style.display = 'none'; // Hide game container
     scoreDisplay.style.display = 'none'; // Hide score display
-    newGameButton.style.display = 'none'; // Hide new game button
+    newGameButton.style.display = 'block'; // Show new game button
     backgroundMusic.src = "music_end.mp3"; // Change to end game music
     backgroundMusic.play(); // Start end game music
-    setTimeout(() => {
+    endingVideo.onended = () => {
         endingVideo.style.display = 'none';
         gameContainer.style.display = 'block';
         scoreDisplay.style.display = 'block';
-        newGameButton.style.display = 'block';
+        newGameButton.style.display = 'none';
         backgroundMusic.src = "music.mp3";
         backgroundMusic.loop = true; // Loop background music
         backgroundMusic.play(); // Restart background music
-    }, 8000); // Wait 8 seconds
+        setTimeout(() => {
+            playOpeningSlideshow();
+        }, 8000); // 8 seconds delay before starting new game
+    };
 }
 
 // Move player with mouse or touch
@@ -79,17 +82,115 @@ document.addEventListener('mousemove', movePlayer);
 document.addEventListener('touchmove', movePlayer);
 
 function movePlayer(event) {
-    if (!gameRunning) return;
-    let x = event.clientX || event.touches[0].clientX;
-    x = Math.max(0, Math.min(window.innerWidth, x));
-    player.style.left = `${x}px`;
+    if (gameRunning) {
+        let posX = event.clientX || event.touches[0].clientX;
+        let posY = event.clientY || event.touches[0].clientY;
+        let rect = gameContainer.getBoundingClientRect();
+        let offsetX = rect.left;
+        let offsetY = rect.top;
+        let playerX = posX - offsetX;
+        let playerY = posY - offsetY;
+        player.style.left = `${playerX}px`;
+        player.style.top = `${playerY}px`;
+    }
 }
 
-// Start the game
-playOpeningSlideshow();
+// Handle player shooting
+document.addEventListener('click', shootBullet);
+document.addEventListener('touchstart', shootBullet);
 
-// Example collision handling
+function shootBullet(event) {
+    if (gameRunning) {
+        let bullet = document.createElement('div');
+        bullet.className = 'bullet';
+        let rect = player.getBoundingClientRect();
+        let playerX = rect.left + rect.width / 2;
+        let playerY = rect.top;
+        bullet.style.left = `${playerX}px`;
+        bullet.style.top = `${playerY}px`;
+        gameContainer.appendChild(bullet);
+        bullets.push(bullet);
+    }
+}
+
+// Game loop
+function gameLoop() {
+    if (gameRunning) {
+        // Move bullets
+        for (let i = 0; i < bullets.length; i++) {
+            let bullet = bullets[i];
+            let bulletY = parseFloat(bullet.style.top);
+            bullet.style.top = `${bulletY - 10}px`; // Move bullet up
+            // Remove bullet if out of screen
+            if (bulletY < -bullet.offsetHeight) {
+                bullet.remove();
+                bullets.splice(i, 1);
+                i--;
+            }
+        }
+
+        // Spawn aliens
+        if (Math.random() < 0.02) {
+            let alien = document.createElement('div');
+            alien.className = 'alien';
+            let alienX = Math.random() * (gameContainer.offsetWidth - 150); // Max width - alien width
+            alien.style.left = `${alienX}px`;
+            alien.style.top = '0px';
+            gameContainer.appendChild(alien);
+            aliens.push(alien);
+        }
+
+        // Move aliens
+        for (let i = 0; i < aliens.length; i++) {
+            let alien = aliens[i];
+            let alienY = parseFloat(alien.style.top);
+            alien.style.top = `${alienY + 5}px`; // Move alien down
+            let alienRect = alien.getBoundingClientRect();
+            let playerRect = player.getBoundingClientRect();
+            // Check collision between alien and player
+            if (isColliding(alienRect, playerRect)) {
+                handleCollision();
+                break;
+            }
+            // Remove alien if out of screen
+            if (alienY > gameContainer.offsetHeight) {
+                alien.remove();
+                aliens.splice(i, 1);
+                i--;
+            }
+            // Check collision between bullets and aliens
+            for (let j = 0; j < bullets.length; j++) {
+                let bullet = bullets[j];
+                let bulletRect = bullet.getBoundingClientRect();
+                if (isColliding(bulletRect, alienRect)) {
+                    bullet.remove();
+                    bullets.splice(j, 1);
+                    j--;
+                    alien.remove();
+                    aliens.splice(i, 1);
+                    i--;
+                    score++;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                    break;
+                }
+            }
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+}
+
+function isColliding(rect1, rect2) {
+    return !(rect1.right < rect2.left ||
+             rect1.left > rect2.right ||
+             rect1.bottom < rect2.top ||
+             rect1.top > rect2.bottom);
+}
+
 function handleCollision() {
     gameRunning = false;
     playEndingVideo();
 }
+
+// Start the game loop
+gameLoop();
