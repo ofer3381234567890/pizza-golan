@@ -92,28 +92,22 @@
             border: none;
             display: none;
         }
-        #openingGif {
+        #openingVideo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('open9.mp4');
-            background-size: cover;
-            background-position: center;
             display: none;
         }
-        #endingGif {
+        #endingVideo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('end9.mp4');
-            background-size: cover;
-            background-position: center;
             display: none;
         }
         /* Background images */
@@ -140,8 +134,8 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- GIFs for opening and ending -->
-    <video id="openingVideo" controls style="display: none;">
+    <!-- Videos for opening and ending -->
+    <video id="openingVideo" controls autoplay style="display: none;">
         <source src="open.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
