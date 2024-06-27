@@ -43,7 +43,7 @@
 
         #player {
             position: absolute;
-            bottom: 80px; /* מרחק נכון לשחקן בנייד */
+            bottom: 200px; /* מרחק נכון לשחקן בנייד */
             width: 150px;
             height: 150px;
             background-image: url('pizza.svg');
@@ -291,7 +291,23 @@
             endingVideo.addEventListener('ended', () => {
                 endingVideo.style.display = 'none';
                 newGameButton.style.display = 'block';
+                showEndingMessage();
             });
+        }
+
+        function showEndingMessage() {
+            const endingMessage = document.createElement('div');
+            endingMessage.textContent = 'המשחק נגמר!';
+            endingMessage.style.position = 'fixed';
+            endingMessage.style.top = '50%';
+            endingMessage.style.left = '50%';
+            endingMessage.style.transform = 'translate(-50%, -50%)';
+            endingMessage.style.padding = '20px';
+            endingMessage.style.fontSize = '24px';
+            endingMessage.style.backgroundColor = 'orange';
+            endingMessage.style.color = 'white';
+            endingMessage.style.zIndex = '1';
+            document.body.appendChild(endingMessage);
         }
 
         document.addEventListener('mousemove', movePlayer);
