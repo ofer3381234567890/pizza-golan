@@ -25,8 +25,8 @@
         #player {
             position: absolute;
             bottom: 20px;
-            width: 150px;
-            height: 150px;
+            width: 75px; /* Reduced size by 50% */
+            height: 75px; /* Reduced size by 50% */
             background-image: url('pizza.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -36,14 +36,14 @@
         }
         .bullet {
             position: absolute;
-            width: 10px;
-            height: 20px;
+            width: 5px; /* Reduced size by 50% */
+            height: 10px; /* Reduced size by 50% */
             background-color: yellow;
         }
         .alien {
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 75px; /* Reduced size by 50% */
+            height: 75px; /* Reduced size by 50% */
             background-image: url('bad.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -92,24 +92,6 @@
             border: none;
             display: none;
         }
-        #openingVideo {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            display: none;
-        }
-        #endingVideo {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            display: none;
-        }
         #openingGif {
             position: fixed;
             top: 0;
@@ -117,6 +99,9 @@
             width: 100vw;
             height: 100vh;
             background-color: black;
+            background-image: url('open9.mp4');
+            background-size: cover;
+            background-position: center;
             display: none;
         }
         #endingGif {
@@ -126,6 +111,9 @@
             width: 100vw;
             height: 100vh;
             background-color: black;
+            background-image: url('end9.mp4');
+            background-size: cover;
+            background-position: center;
             display: none;
         }
         /* Background images */
@@ -152,10 +140,9 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- Videos for opening and ending -->
-    <video id="openingVideo" src="open9.mp4" playsinline></video>
-    <video id="endingVideo" src="end9.mp4" playsinline></video>
-
+    <!-- GIFs for opening and ending -->
+    <div id="openingGif"></div>
+    <div id="endingGif"></div>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
     <script>
@@ -164,8 +151,8 @@
         const newGameButton = document.getElementById('newGameButton');
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
-        const openingVideo = document.getElementById('openingVideo');
-        const endingVideo = document.getElementById('endingVideo');
+        const openingGif = document.getElementById('openingGif');
+        const endingGif = document.getElementById('endingGif');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
         let bullets = [];
@@ -176,7 +163,7 @@
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
             loadingMessage.style.display = 'block';
-            playOpeningVideo();
+            playOpeningGif();
         });
 
         newGameButton.addEventListener('click', () => {
@@ -196,27 +183,25 @@
             backgroundMusic.currentTime = 0; // Reset music to start
         });
 
-        function playOpeningVideo() {
-            openingVideo.style.display = 'block';
-            openingVideo.play();
+        function playOpeningGif() {
+            openingGif.style.display = 'block';
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
-            openingVideo.onended = () => {
-                openingVideo.style.display = 'none';
+            setTimeout(() => {
+                openingGif.style.display = 'none';
                 loadingMessage.style.display = 'none';
                 gameRunning = true;
-            };
+            }, 5000); // Assuming GIF duration is 5 seconds
         }
 
-        function playEndingVideo() {
-            endingVideo.style.display = 'block';
-            endingVideo.play();
+        function playEndingGif() {
+            endingGif.style.display = 'block';
             backgroundMusic.src = "music_end.mp3"; // Change to end game music
             backgroundMusic.play(); // Start end game music
-            endingVideo.onended = () => {
-                endingVideo.style.display = 'none';
+            setTimeout(() => {
+                endingGif.style.display = 'none';
                 location.reload(); // Reload the page to start over
-            };
+            }, 5000); // Assuming GIF duration is 5 seconds
         }
 
         // Move player with mouse or touch
@@ -276,57 +261,44 @@
                 aliens.push(alien);
 
                 const moveAlien = setInterval(() => {
-                    alien.style.top = (parseInt(alien.style.top) + 3) + 'px'; // Adjusted speed
+                    alien.style.top = (parseInt(alien.style.top) + 3) + 'px';
                     if (parseInt(alien.style.top) > window.innerHeight) {
                         clearInterval(moveAlien);
                         alien.remove();
                         aliens = aliens.filter(a => a !== alien);
                     }
-
-                    // Check collision with player
                     if (isColliding(player, alien)) {
-                        handleCollision();
+                        endGame();
                     }
-                }, 20);
+                }, 10);
             }
-        }, 1000);
-
-        function createExplosion(alien) {
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.style.left = alien.style.left;
-            explosion.style.top = alien.style.top;
-            gameContainer.appendChild(explosion);
-
-            setTimeout(() => {
-                explosion.remove();
-            }, 500);
-        }
-
-        function isColliding(a, b) {
-            return !(
-                ((a.offsetTop + a.offsetHeight) < (b.offsetTop)) ||
-                (a.offsetTop > (b.offsetTop + b.offsetHeight)) ||
-                ((a.offsetLeft + a.offsetWidth) < b.offsetLeft) ||
-                (a.offsetLeft > (b.offsetLeft + b.offsetWidth))
-            );
-        }
+        }, 1000); // Adjusted spawn rate to every 1 second
 
         function increaseScore() {
-            score += 10;
+            score++;
             scoreDisplay.textContent = `Score: ${score}`;
+            if (score % 10 === 0) {
+                // Increase difficulty or add new features
+            }
         }
 
-        function handleCollision() {
+        function endGame() {
             gameRunning = false;
-            newGameButton.style.display = 'block';
-            scoreDisplay.style.fontSize = '48px';
-            scoreDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.5)';
-            scoreDisplay.textContent = `Final Score: ${score}`;
             backgroundMusic.pause();
-            setTimeout(() => {
-                playEndingVideo();
-            }, 8000); // 8 seconds delay before playing the ending video
+            playEndingGif();
+        }
+
+        function isColliding(element1, element2) {
+            let rect1 = element1.getBoundingClientRect();
+            let rect2 = element2.getBoundingClientRect();
+            return !(rect1.right < rect2.left ||
+                     rect1.left > rect2.right ||
+                     rect1.bottom < rect2.top ||
+                     rect1.top > rect2.bottom);
+        }
+
+        function createExplosion(alien) {
+            // Implement explosion effect when an alien is hit
         }
     </script>
 </body>
