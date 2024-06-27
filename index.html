@@ -247,21 +247,23 @@
 
         function playEndingVideo() {
             endingVideo.style.display = 'block';
-            endingVideo.play();
-            gameContainer.style.display = 'none';
-            scoreDisplay.style.display = 'none';
-            newGameButton.style.display = 'block';
-            backgroundMusic.src = "music_end.mp3";
-            backgroundMusic.play();
-            endingVideo.onended = () => {
-                endingVideo.style.display = 'none';
-                gameContainer.style.display = 'block';
-                scoreDisplay.style.display = 'block';
-                newGameButton.style.display = 'none';
-                backgroundMusic.src = "music.mp3";
-                backgroundMusic.loop = true;
+            setTimeout(() => {
+                endingVideo.play();
+                gameContainer.style.display = 'none';
+                scoreDisplay.style.display = 'none';
+                newGameButton.style.display = 'block';
+                backgroundMusic.src = "music_end.mp3";
                 backgroundMusic.play();
-            };
+                endingVideo.onended = () => {
+                    endingVideo.style.display = 'none';
+                    gameContainer.style.display = 'block';
+                    scoreDisplay.style.display = 'block';
+                    newGameButton.style.display = 'none';
+                    backgroundMusic.src = "music.mp3";
+                    backgroundMusic.loop = true;
+                    backgroundMusic.play();
+                };
+            }, 8000); // עיכוב של 8 שניות
         }
 
         document.addEventListener('mousemove', movePlayer);
