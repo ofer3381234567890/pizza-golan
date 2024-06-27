@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>פיצה גולן - הפיצה של הצפון</title>
+    <title>Space Shooter Game</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
             background-color: black;
-            color: white;
         }
         #gameContainer {
             position: absolute;
@@ -26,8 +25,8 @@
         #player {
             position: absolute;
             bottom: 20px;
-            width: 150px;
-            height: 150px;
+            width: 150px; /* Increased size by 300% */
+            height: 150px; /* Increased size by 300% */
             background-image: url('pizza.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -43,22 +42,11 @@
         }
         .alien {
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 150px; /* Increased size by 300% */
+            height: 150px; /* Increased size by 300% */
             background-image: url('bad.svg');
             background-size: contain;
             background-repeat: no-repeat;
-        }
-        #score {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: orange;
-            color: white;
-            border: none;
-            z-index: 1; /* Ensure it's above other elements */
         }
         #newGameButton {
             position: fixed;
@@ -70,7 +58,6 @@
             border: none;
             cursor: pointer;
             display: none;
-            z-index: 1; /* Ensure it's above other elements */
         }
         #startGameButton {
             position: fixed;
@@ -82,23 +69,39 @@
             background-color: white;
             border: none;
             cursor: pointer;
-            z-index: 1; /* Ensure it's above other elements */
         }
-        /* Background image for phone */
+        #score {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: orange;
+            color: white;
+            border: none;
+        }
+        #openingVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            display: none;
+        }
+        #endingVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            display: none;
+        }
         @media (max-aspect-ratio: 9/16) {
             body, html {
                 background-image: url('9_16bk.png');
                 background-size: cover;
-            }
-            #gameTitle {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 5em;
-                color: white;
-                text-shadow: 2px 2px 4px black;
-                z-index: 1;
             }
         }
         @media (min-aspect-ratio: 16/9) {
@@ -117,12 +120,19 @@
     <button id="newGameButton">התחל משחק חדש</button>
     <button id="startGameButton">התחל משחק</button>
 
+    <video id="openingVideo" src="open.mp4"></video>
+    <video id="endingVideo" src="end9.mp4"></video>
+    <audio id="backgroundMusic" src="music.mp3" loop></audio>
+
     <script>
         const gameContainer = document.getElementById('gameContainer');
         const player = document.getElementById('player');
         const newGameButton = document.getElementById('newGameButton');
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
+        const openingVideo = document.getElementById('openingVideo');
+        const endingVideo = document.getElementById('endingVideo');
+        const backgroundMusic = document.getElementById('backgroundMusic');
         let bullets = [];
         let aliens = [];
         let score = 0;
@@ -130,9 +140,132 @@
 
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
-            gameRunning = true;
-            playGame();
+            openingVideo.style.display = 'block';
+            openingVideo.play();
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+            openingVideo.onended = () => {
+                openingVideo.style.display = 'none';
+                gameRunning = true;
+            };
         });
+
+        // Move player with mouse or touch
+        document.addEventListener('mousemove', movePlayer);
+        document.addEventListener('touchmove', movePlayer);
+
+        function movePlayer(event) {
+            let x = event.clientX || event.touches[0].clientX;
+            if (gameRunning) {
+                player.style.left = `${x - player.offsetWidth / 2}px`;
+            }
+        }
+
+        // Shoot on click or touch
+        document.addEventListener('click', shoot);
+        document.addEventListener('touchstart', shoot);
+
+        function shoot(event) {
+            if (gameRunning) {
+                const bullet = document.createElement('div');
+                bullet.className = 'bullet';
+                bullet.style.left = (player.offsetLeft + player.offsetWidth / 2 - 5) + 'px';
+                bullet.style.bottom = '150px'; // Adjusted position for larger player
+                gameContainer.appendChild(bullet);
+                bullets.push(bullet);
+
+                const moveBullet = setInterval(() => {
+                    bullet.style.bottom = (parseInt(bullet.style.bottom) + 5) + 'px';
+                    if (parseInt(bullet.style.bottom) > window.innerHeight) {
+                        clearInterval(moveBullet);
+                        bullet.remove();
+                        bullets = bullets.filter(b => b !== bullet);
+                    }
+                    aliens.forEach(alien => {
+                        if (isColliding(bullet, alien)) {
+                            createExplosion(alien);
+                            clearInterval(moveBullet);
+                            bullet.remove();
+                            bullets = bullets.filter(b => b !== bullet);
+                            alien.remove();
+                            aliens = aliens.filter(a => a !== alien);
+                            increaseScore();
+                        }
+                    });
+                }, 10);
+            }
+        }
+
+        // Spawn aliens every second
+        setInterval(() => {
+            if (gameRunning) {
+                const alien = document.createElement('div');
+                alien.className = 'alien';
+                alien.style.top = '0px';
+                alien.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+                gameContainer.appendChild(alien);
+                aliens.push(alien);
+
+                const moveAlien = setInterval(() => {
+                    alien.style.top = (parseInt(alien.style.top) + 3) + 'px'; // Adjusted speed
+                    if (parseInt(alien.style.top) > window.innerHeight) {
+                        clearInterval(moveAlien);
+                        alien.remove();
+                        aliens = aliens.filter(a => a !== alien);
+                    }
+
+                    // Check collision with player
+                    if (isColliding(player, alien)) {
+                        handleCollision();
+                    }
+                }, 20);
+            }
+        }, 1000);
+
+        function createExplosion(alien) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = alien.style.left;
+            explosion.style.top = alien.style.top;
+            gameContainer.appendChild(explosion);
+
+            setTimeout(() => {
+                explosion.remove();
+            }, 500);
+        }
+
+        function isColliding(a, b) {
+            return !(
+                ((a.offsetTop + a.offsetHeight) < (b.offsetTop)) ||
+                (a.offsetTop > (b.offsetTop + b.offsetHeight)) ||
+                ((a.offsetLeft + a.offsetWidth) < b.offsetLeft) ||
+                (a.offsetLeft > (b.offsetLeft + b.offsetWidth))
+            );
+        }
+
+        function increaseScore() {
+            score += 10;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function handleCollision() {
+            gameRunning = false;
+            newGameButton.style.display = 'block';
+            scoreDisplay.style.fontSize = '48px';
+            scoreDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.5)';
+            scoreDisplay.textContent = `Final Score: ${score}`;
+            backgroundMusic.pause();
+            setTimeout(() => {
+                endingVideo.style.display = 'block';
+                endingVideo.play();
+                backgroundMusic.src = "music_end.mp3"; // Change to end game music
+                backgroundMusic.play(); // Start end game music
+                endingVideo.onended = () => {
+                    endingVideo.style.display = 'none';
+                    location.reload(); // Reload the page to start over
+                };
+            }, 8000); // 8 seconds delay before playing the ending video
+        }
 
         newGameButton.addEventListener('click', () => {
             gameRunning = true;
@@ -148,128 +281,9 @@
             while (aliens.length > 0) {
                 aliens.pop().remove();
             }
+            backgroundMusic.currentTime = 0; // Reset music to start
         });
-
-        function playGame() {
-            const playerWidth = player.offsetWidth;
-            const gameContainerWidth = gameContainer.offsetWidth;
-            let playerPosition = gameContainerWidth / 2 - playerWidth / 2;
-
-            function movePlayer() {
-                player.style.left = `${playerPosition}px`;
-            }
-
-            function shoot() {
-                const bullet = document.createElement('div');
-                bullet.className = 'bullet';
-                bullet.style.left = `${playerPosition + playerWidth / 2}px`;
-                gameContainer.appendChild(bullet);
-                bullets.push(bullet);
-
-                function moveBullet() {
-                    bullet.style.bottom = `${parseInt(bullet.style.bottom) + 5}px`;
-
-                    // Check for collision with aliens
-                    for (let i = 0; i < aliens.length; i++) {
-                        const alien = aliens[i];
-                        const bulletRect = bullet.getBoundingClientRect();
-                        const alienRect = alien.getBoundingClientRect();
-                        if (isCollision(bulletRect, alienRect)) {
-                            alien.remove();
-                            aliens.splice(i, 1);
-                            bullet.remove();
-                            bullets.splice(bullets.indexOf(bullet), 1);
-                            addScore(10);
-                            return;
-                        }
-                    }
-
-                    // Remove bullet if it goes out of bounds
-                    if (parseInt(bullet.style.bottom) > window.innerHeight) {
-                        bullet.remove();
-                        bullets.splice(bullets.indexOf(bullet), 1);
-                    } else {
-                        requestAnimationFrame(moveBullet);
-                    }
-                }
-                requestAnimationFrame(moveBullet);
-            }
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'ArrowLeft') {
-                    playerPosition -= 10;
-                    if (playerPosition < 0) {
-                        playerPosition = 0;
-                    }
-                    movePlayer();
-                } else if (event.key === 'ArrowRight') {
-                    playerPosition += 10;
-                    const maxPosition = gameContainerWidth - playerWidth;
-                    if (playerPosition > maxPosition) {
-                        playerPosition = maxPosition;
-                    }
-                    movePlayer();
-                }
-            });
-
-            gameContainer.addEventListener('click', () => {
-                shoot();
-            });
-
-            function createAlien() {
-                const alien = document.createElement('div');
-                alien.className = 'alien';
-                alien.style.left = `${Math.random() * (gameContainerWidth - 150)}px`;
-                alien.style.top = `${-150}px`;
-                gameContainer.appendChild(alien);
-                aliens.push(alien);
-
-                function moveAlien() {
-                    const alienSpeed = 2 + Math.random() * 3;
-                    alien.style.top = `${parseInt(alien.style.top) + alienSpeed}px`;
-
-                    // Check for collision with player
-                    const playerRect = player.getBoundingClientRect();
-                    const alienRect = alien.getBoundingClientRect();
-                    if (isCollision(playerRect, alienRect)) {
-                        endGame();
-                        return;
-                    }
-
-                    // Remove alien if it goes out of bounds
-                    if (parseInt(alien.style.top) > window.innerHeight) {
-                        alien.remove();
-                        aliens.splice(aliens.indexOf(alien), 1);
-                    } else {
-                        requestAnimationFrame(moveAlien);
-                    }
-                }
-                requestAnimationFrame(moveAlien);
-            }
-
-            setInterval(() => {
-                if (gameRunning) {
-                    createAlien();
-                }
-            }, 2000);
-
-            function addScore(points) {
-                score += points;
-                scoreDisplay.textContent = `Score: ${score}`;
-            }
-
-            function isCollision(rect1, rect2) {
-                return !(rect1.right < rect2.left ||
-                         rect1.left > rect2.right ||
-                         rect1.bottom < rect2.top ||
-                         rect1.top > rect2.bottom);
-            }
-
-            function endGame() {
-                gameRunning = false;
-                newGameButton.style.display = 'block';
-            }
-        }
     </script>
 </body>
 </html>
+
