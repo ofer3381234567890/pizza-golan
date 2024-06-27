@@ -209,9 +209,11 @@
                         playerPosition = maxPosition;
                     }
                     movePlayer();
-                } else if (event.key === ' ' || event.key === 'Spacebar') {
-                    shoot();
                 }
+            });
+
+            gameContainer.addEventListener('click', () => {
+                shoot();
             });
 
             function createAlien() {
