@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק להתפשט בחלל</title>
+    <title>פיצה גולן - הפיצה של הצפון</title>
     <style>
         body, html {
             margin: 0;
@@ -92,13 +92,20 @@
             border: none;
             display: none;
         }
-        #openingVideo {
+        #openingSlideshow {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: black;
+            display: none;
+            z-index: 100;
+        }
+        #openingSlideshow img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: none;
         }
         #endingVideo {
@@ -110,7 +117,7 @@
             background-color: black;
             display: none;
         }
-        /* Background images */
+        /* Background image for phone */
         @media (max-aspect-ratio: 9/16) {
             body, html {
                 background-image: url('9_16bk.png');
@@ -134,11 +141,19 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- Videos for opening and ending -->
-    <video id="openingVideo" controls style="display: none;">
-        <source src="open9.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <!-- Slideshow for opening -->
+    <div id="openingSlideshow">
+        <img src="open0.png">
+        <img src="open1.png">
+        <img src="open2.png">
+        <img src="open3.png">
+        <img src="open4.png">
+        <img src="open5.png">
+        <img src="open6.png">
+        <img src="open7.png">
+    </div>
+
+    <!-- Video for ending -->
     <video id="endingVideo" controls style="display: none;">
         <source src="end9.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -151,7 +166,7 @@
         const newGameButton = document.getElementById('newGameButton');
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
-        const openingVideo = document.getElementById('openingVideo');
+        const openingSlideshow = document.getElementById('openingSlideshow');
         const endingVideo = document.getElementById('endingVideo');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
@@ -163,7 +178,7 @@
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
             loadingMessage.style.display = 'block';
-            playOpeningVideo();
+            playOpeningSlideshow();
         });
 
         newGameButton.addEventListener('click', () => {
@@ -181,19 +196,25 @@
                 aliens.pop().remove();
             }
             backgroundMusic.currentTime = 0; // Reset music to start
-            backgroundMusic.play(); // Start playing background music
         });
 
-        function playOpeningVideo() {
-            openingVideo.style.display = 'block';
+        function playOpeningSlideshow() {
+            openingSlideshow.style.display = 'block';
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
-            openingVideo.play();
-            openingVideo.onended = () => {
-                openingVideo.style.display = 'none';
+            const images = openingSlideshow.getElementsByTagName('img');
+            let index = 0;
+            const interval = setInterval(() => {
+                images[index].style.display = 'none';
+                index = (index + 1) % images.length;
+                images[index].style.display = 'block';
+            }, 10000 / images.length); // 10 seconds divided by number of images
+            setTimeout(() => {
+                clearInterval(interval);
+                openingSlideshow.style.display = 'none';
                 loadingMessage.style.display = 'none';
                 gameRunning = true;
-            };
+            }, 10000); // 10 seconds delay
         }
 
         function playEndingVideo() {
@@ -201,22 +222,16 @@
             endingVideo.play();
             gameContainer.style.display = 'none'; // Hide game container
             scoreDisplay.style.display = 'none'; // Hide score display
-            backgroundMusic.pause(); // Pause game music
-            
-            endingVideo.addEventListener('canplaythrough', () => {
-                endingVideo.play();
-                backgroundMusic.src = "music_end.mp3"; // Change to end game music
-                backgroundMusic.play(); // Start end game music
-            });
-
+            newGameButton.style.display = 'block'; // Show new game button
+            backgroundMusic.src = "music_end.mp3"; // Change to end game music
+            backgroundMusic.play(); // Start end game music
             endingVideo.onended = () => {
                 endingVideo.style.display = 'none';
                 gameContainer.style.display = 'block';
                 scoreDisplay.style.display = 'block';
-                startGameButton.style.display = 'block'; // Show start game button again
-                backgroundMusic.src = "music.mp3"; // Restore original game music
-                backgroundMusic.currentTime = 0; // Reset music to start
-                backgroundMusic.play(); // Start playing background music again
+                newGameButton.style.display = 'none';
+                backgroundMusic.src = "music.mp3";
+                backgroundMusic.play();
             };
         }
 
@@ -272,12 +287,12 @@
                 const alien = document.createElement('div');
                 alien.className = 'alien';
                 alien.style.top = '0px';
-                alien.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+                alien.style.left = Math.random() * (window.innerWidth - 150) + 'px';
                 gameContainer.appendChild(alien);
                 aliens.push(alien);
 
                 const moveAlien = setInterval(() => {
-                    alien.style.top = (parseInt(alien.style.top) + 3) + 'px'; // Adjusted speed
+                    alien.style.top = (parseInt(alien.style.top) + 2) + 'px'; // Adjusted speed
                     if (parseInt(alien.style.top) > window.innerHeight) {
                         clearInterval(moveAlien);
                         alien.remove();
@@ -288,46 +303,51 @@
                     if (isColliding(player, alien)) {
                         handleCollision();
                     }
-                }, 20);
+                }, 10);
             }
         }, 1000);
 
         function createExplosion(alien) {
             const explosion = document.createElement('div');
             explosion.className = 'explosion';
+            explosion.style.position = 'absolute';
+            explosion.style.width = '150px';
+            explosion.style.height = '150px';
+            explosion.style.backgroundImage = "url('explosion.gif')";
+            explosion.style.backgroundSize = 'cover';
             explosion.style.left = alien.style.left;
             explosion.style.top = alien.style.top;
             gameContainer.appendChild(explosion);
 
             setTimeout(() => {
                 explosion.remove();
-            }, 500);
+            }, 1000);
         }
 
         function isColliding(a, b) {
-            return !(
-                ((a.offsetTop + a.offsetHeight) < (b.offsetTop)) ||
-                (a.offsetTop > (b.offsetTop + b.offsetHeight)) ||
-                ((a.offsetLeft + a.offsetWidth) < b.offsetLeft) ||
-                (a.offsetLeft > (b.offsetLeft + b.offsetWidth))
-            );
+            const rect1 = a.getBoundingClientRect();
+            const rect2 = b.getBoundingClientRect();
+            return !(rect1.right < rect2.left ||
+                     rect1.left > rect2.right ||
+                     rect1.bottom < rect2.top ||
+                     rect1.top > rect2.bottom);
         }
 
         function increaseScore() {
-            score += 10;
+            score++;
             scoreDisplay.textContent = `Score: ${score}`;
+            if (score % 10 === 0) {
+                scoreDisplay.style.fontSize = '24px';
+                scoreDisplay.style.backgroundColor = 'green';
+            } else {
+                scoreDisplay.style.fontSize = '18px';
+                scoreDisplay.style.backgroundColor = 'orange';
+            }
         }
 
         function handleCollision() {
             gameRunning = false;
-            newGameButton.style.display = 'block';
-            scoreDisplay.style.fontSize = '48px';
-            scoreDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.5)';
-            scoreDisplay.textContent = `סיכום נקודות: ${score}`;
-            backgroundMusic.pause();
-            setTimeout(() => {
-                playEndingVideo();
-            }, 8000); // 8 seconds delay before playing the ending video
+            playEndingVideo();
         }
     </script>
 </body>
