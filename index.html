@@ -196,6 +196,7 @@
                 aliens.pop().remove();
             }
             backgroundMusic.currentTime = 0; // Reset music to start
+            backgroundMusic.play(); // Start background music
         });
 
         function playOpeningSlideshow() {
@@ -231,7 +232,8 @@
                 scoreDisplay.style.display = 'block';
                 newGameButton.style.display = 'none';
                 backgroundMusic.src = "music.mp3";
-                backgroundMusic.play();
+                backgroundMusic.loop = true; // Loop background music
+                backgroundMusic.play(); // Restart background music
             };
         }
 
