@@ -145,6 +145,9 @@
     </video>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
+    <!-- Image for social media sharing -->
+    <img src="golan.png" alt="Share on WhatsApp and Facebook" style="position: fixed; bottom: 20px; right: 20px; width: 100px; height: 100px; cursor: pointer;">
+
     <script>
         const gameContainer = document.getElementById('gameContainer');
         const player = document.getElementById('player');
@@ -203,6 +206,12 @@
             newGameButton.style.display = 'block'; // Show new game button
             backgroundMusic.src = "music_end.mp3"; // Change to end game music
             backgroundMusic.play(); // Start end game music
+            endingVideo.onended = () => {
+                endingVideo.style.display = 'none';
+                gameContainer.style.display = 'block';
+                scoreDisplay.style.display = 'block';
+                playOpeningVideo(); // Restart the game after ending video
+            };
         }
 
         // Move player with mouse or touch
