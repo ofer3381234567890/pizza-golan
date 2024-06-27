@@ -117,7 +117,7 @@
             background-color: black;
             display: none;
         }
-        /* Background image for phone */
+        /* Background image adjustments */
         @media (max-aspect-ratio: 9/16) {
             body, html {
                 background-image: url('9_16bk.png');
@@ -269,88 +269,69 @@
                         bullets = bullets.filter(b => b !== bullet);
                     }
                     aliens.forEach(alien => {
-                        if (isColliding(bullet, alien)) {
-                            createExplosion(alien);
+                        if (isBulletColliding(bullet, alien)) {
                             clearInterval(moveBullet);
                             bullet.remove();
                             bullets = bullets.filter(b => b !== bullet);
                             alien.remove();
                             aliens = aliens.filter(a => a !== alien);
-                            increaseScore();
+                            score++;
+                            scoreDisplay.textContent = `Score: ${score}`;
+                            if (aliens.length === 0) {
+                                playEndingVideo();
+                            }
                         }
                     });
                 }, 10);
             }
         }
 
-        // Spawn aliens every second
+        function isBulletColliding(bullet, alien) {
+            let bulletRect = bullet.getBoundingClientRect();
+            let alienRect = alien.getBoundingClientRect();
+            return !(bulletRect.right < alienRect.left ||
+                    bulletRect.left > alienRect.right ||
+                    bulletRect.bottom < alienRect.top ||
+                    bulletRect.top > alienRect.bottom);
+        }
+
+        // Alien generation
         setInterval(() => {
             if (gameRunning) {
                 const alien = document.createElement('div');
                 alien.className = 'alien';
-                alien.style.top = '0px';
-                alien.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+                alien.style.left = `${Math.random() * (window.innerWidth - 150)}px`;
+                alien.style.top = `-${Math.random() * 200}px`;
                 gameContainer.appendChild(alien);
                 aliens.push(alien);
 
                 const moveAlien = setInterval(() => {
-                    alien.style.top = (parseInt(alien.style.top) + 2) + 'px'; // Adjusted speed
+                    alien.style.top = (parseInt(alien.style.top) + 5) + 'px';
                     if (parseInt(alien.style.top) > window.innerHeight) {
                         clearInterval(moveAlien);
                         alien.remove();
                         aliens = aliens.filter(a => a !== alien);
                     }
-
-                    // Check collision with player
-                    if (isColliding(player, alien)) {
-                        handleCollision();
+                    if (isPlayerColliding(player, alien)) {
+                        clearInterval(moveAlien);
+                        alien.remove();
+                        aliens = aliens.filter(a => a !== alien);
+                        gameRunning = false;
+                        newGameButton.style.display = 'block';
                     }
-                }, 10);
+                }, 30);
             }
         }, 1000);
 
-        function createExplosion(alien) {
-            const explosion = document.createElement('div');
-            explosion.className = 'explosion';
-            explosion.style.position = 'absolute';
-            explosion.style.width = '150px';
-            explosion.style.height = '150px';
-            explosion.style.backgroundImage = "url('explosion.gif')";
-            explosion.style.backgroundSize = 'cover';
-            explosion.style.left = alien.style.left;
-            explosion.style.top = alien.style.top;
-            gameContainer.appendChild(explosion);
-
-            setTimeout(() => {
-                explosion.remove();
-            }, 1000);
+        function isPlayerColliding(player, alien) {
+            let playerRect = player.getBoundingClientRect();
+            let alienRect = alien.getBoundingClientRect();
+            return !(playerRect.right < alienRect.left ||
+                    playerRect.left > alienRect.right ||
+                    playerRect.bottom < alienRect.top ||
+                    playerRect.top > alienRect.bottom);
         }
 
-        function isColliding(a, b) {
-            const rect1 = a.getBoundingClientRect();
-            const rect2 = b.getBoundingClientRect();
-            return !(rect1.right < rect2.left ||
-                     rect1.left > rect2.right ||
-                     rect1.bottom < rect2.top ||
-                     rect1.top > rect2.bottom);
-        }
-
-        function increaseScore() {
-            score++;
-            scoreDisplay.textContent = `Score: ${score}`;
-            if (score % 10 === 0) {
-                scoreDisplay.style.fontSize = '24px';
-                scoreDisplay.style.backgroundColor = 'green';
-            } else {
-                scoreDisplay.style.fontSize = '18px';
-                scoreDisplay.style.backgroundColor = 'orange';
-            }
-        }
-
-        function handleCollision() {
-            gameRunning = false;
-            playEndingVideo();
-        }
     </script>
 </body>
 </html>
