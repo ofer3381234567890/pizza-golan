@@ -99,7 +99,7 @@
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('open9.gif');
+            background-image: url('open9.mp4');
             background-size: cover;
             background-position: center;
             display: none;
@@ -141,7 +141,10 @@
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
     <!-- GIFs for opening and ending -->
-    <div id="openingGif"></div>
+    <video id="openingVideo" controls style="display: none;">
+        <source src="open.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
     <video id="endingVideo" controls style="display: none;">
         <source src="end.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -154,7 +157,7 @@
         const newGameButton = document.getElementById('newGameButton');
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
-        const openingGif = document.getElementById('openingGif');
+        const openingVideo = document.getElementById('openingVideo');
         const endingVideo = document.getElementById('endingVideo');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
@@ -166,7 +169,7 @@
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
             loadingMessage.style.display = 'block';
-            playOpeningGif();
+            playOpeningVideo();
         });
 
         newGameButton.addEventListener('click', () => {
@@ -186,15 +189,16 @@
             backgroundMusic.currentTime = 0; // Reset music to start
         });
 
-        function playOpeningGif() {
-            openingGif.style.display = 'block';
+        function playOpeningVideo() {
+            openingVideo.style.display = 'block';
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
-            setTimeout(() => {
-                openingGif.style.display = 'none';
+            openingVideo.play();
+            openingVideo.onended = () => {
+                openingVideo.style.display = 'none';
                 loadingMessage.style.display = 'none';
                 gameRunning = true;
-            }, 5000); // Assuming GIF duration is 5 seconds
+            };
         }
 
         function playEndingVideo() {
@@ -310,7 +314,7 @@
             newGameButton.style.display = 'block';
             scoreDisplay.style.fontSize = '48px';
             scoreDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.5)';
-            scoreDisplay.textContent = `Final Score: ${score}`;
+            scoreDisplay.textContent = `סיכום נקודות: ${score}`;
             backgroundMusic.pause();
             setTimeout(() => {
                 playEndingVideo();
