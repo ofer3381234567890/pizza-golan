@@ -80,6 +80,18 @@
             color: white;
             border: none;
         }
+        #loadingMessage {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: white;
+            color: black;
+            border: none;
+            display: none;
+        }
         #openingVideo {
             position: fixed;
             top: 0;
@@ -120,6 +132,7 @@
     <div id="score">Score: 0</div>
     <button id="newGameButton">התחל משחק חדש</button>
     <button id="startGameButton">התחל משחק</button>
+    <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
     <!-- Videos with playsinline attribute -->
     <video id="openingVideo" src="open.mp4" playsinline></video>
@@ -134,6 +147,7 @@
         const scoreDisplay = document.getElementById('score');
         const openingVideo = document.getElementById('openingVideo');
         const endingVideo = document.getElementById('endingVideo');
+        const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
         let bullets = [];
         let aliens = [];
@@ -142,6 +156,7 @@
 
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
+            loadingMessage.style.display = 'block';
             playOpeningVideo();
         });
 
@@ -167,6 +182,9 @@
             openingVideo.play();
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
+            openingVideo.onloadeddata = () => {
+                loadingMessage.style.display = 'none';
+            };
             openingVideo.onended = () => {
                 openingVideo.style.display = 'none';
                 gameRunning = true;
@@ -278,18 +296,20 @@
         }
 
         function increaseScore() {
-            score++;
+            score += 10;
             scoreDisplay.textContent = `Score: ${score}`;
-            if (score % 10 === 0) {
-                scoreDisplay.style.fontSize = `${18 + score / 10}px`;
-                scoreDisplay.style.backgroundColor = `rgb(${Math.random() * 256},${Math.random() * 256},${Math.random() * 256})`;
-            }
         }
 
         function handleCollision() {
             gameRunning = false;
             newGameButton.style.display = 'block';
-            playEndingVideo();
+            scoreDisplay.style.fontSize = '48px';
+            scoreDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.5)';
+            scoreDisplay.textContent = `Final Score: ${score}`;
+            backgroundMusic.pause();
+            setTimeout(() => {
+                playEndingVideo();
+            }, 8000); // 8 seconds delay before playing the ending video
         }
     </script>
 </body>
