@@ -25,8 +25,8 @@
         #player {
             position: absolute;
             bottom: 20px;
-            width: 150px; /* Increased size by 300% */
-            height: 150px; /* Increased size by 300% */
+            width: 150px;
+            height: 150px;
             background-image: url('pizza.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -42,8 +42,8 @@
         }
         .alien {
             position: absolute;
-            width: 150px; /* Increased size by 300% */
-            height: 150px; /* Increased size by 300% */
+            width: 150px;
+            height: 150px;
             background-image: url('bad.svg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -110,6 +110,24 @@
             background-color: black;
             display: none;
         }
+        #openingGif {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            display: none;
+        }
+        #endingGif {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: black;
+            display: none;
+        }
         /* Background images */
         @media (max-aspect-ratio: 9/16) {
             body, html {
@@ -134,9 +152,10 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- Videos with playsinline attribute -->
-    <video id="openingVideo" src="open.mp4" playsinline></video>
+    <!-- Videos for opening and ending -->
+    <video id="openingVideo" src="open9.mp4" playsinline></video>
     <video id="endingVideo" src="end9.mp4" playsinline></video>
+
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
     <script>
@@ -182,11 +201,9 @@
             openingVideo.play();
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
-            openingVideo.onloadeddata = () => {
-                loadingMessage.style.display = 'none';
-            };
             openingVideo.onended = () => {
                 openingVideo.style.display = 'none';
+                loadingMessage.style.display = 'none';
                 gameRunning = true;
             };
         }
