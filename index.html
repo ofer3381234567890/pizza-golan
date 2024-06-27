@@ -181,6 +181,7 @@
                 aliens.pop().remove();
             }
             backgroundMusic.currentTime = 0; // Reset music to start
+            backgroundMusic.play(); // Start playing background music
         });
 
         function playOpeningVideo() {
@@ -200,11 +201,12 @@
             endingVideo.play();
             gameContainer.style.display = 'none'; // Hide game container
             scoreDisplay.style.display = 'none'; // Hide score display
-            backgroundMusic.src = "music_end.mp3"; // Change to end game music
+            backgroundMusic.pause(); // Pause game music
             
-            // Start playing background music when ending video can play
             endingVideo.addEventListener('canplaythrough', () => {
-                backgroundMusic.play();
+                endingVideo.play();
+                backgroundMusic.src = "music_end.mp3"; // Change to end game music
+                backgroundMusic.play(); // Start end game music
             });
 
             endingVideo.onended = () => {
@@ -212,6 +214,9 @@
                 gameContainer.style.display = 'block';
                 scoreDisplay.style.display = 'block';
                 startGameButton.style.display = 'block'; // Show start game button again
+                backgroundMusic.src = "music.mp3"; // Restore original game music
+                backgroundMusic.currentTime = 0; // Reset music to start
+                backgroundMusic.play(); // Start playing background music again
             };
         }
 
