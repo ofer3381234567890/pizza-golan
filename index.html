@@ -92,28 +92,22 @@
             border: none;
             display: none;
         }
-        #openingGif {
+        #openingVideo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('open9.mp4');
-            background-size: cover;
-            background-position: center;
             display: none;
         }
-        #endingGif {
+        #endingVideo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('end9.mp4');
-            background-size: cover;
-            background-position: center;
             display: none;
         }
         /* Background images */
@@ -140,9 +134,9 @@
     <button id="startGameButton">התחל משחק</button>
     <div id="loadingMessage">סבלנות... טוען וידאו</div>
 
-    <!-- GIFs for opening and ending -->
-    <div id="openingGif"></div>
-    <div id="endingGif"></div>
+    <!-- Videos for opening and ending -->
+    <video id="openingVideo" src="open9.mp4" muted></video>
+    <video id="endingVideo" src="end9.mp4" muted></video>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
     <script>
@@ -151,8 +145,8 @@
         const newGameButton = document.getElementById('newGameButton');
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
-        const openingGif = document.getElementById('openingGif');
-        const endingGif = document.getElementById('endingGif');
+        const openingVideo = document.getElementById('openingVideo');
+        const endingVideo = document.getElementById('endingVideo');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
         let bullets = [];
@@ -163,7 +157,7 @@
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
             loadingMessage.style.display = 'block';
-            playOpeningGif();
+            playOpeningVideo();
         });
 
         newGameButton.addEventListener('click', () => {
@@ -183,25 +177,23 @@
             backgroundMusic.currentTime = 0; // Reset music to start
         });
 
-        function playOpeningGif() {
-            openingGif.style.display = 'block';
-            backgroundMusic.currentTime = 0;
-            backgroundMusic.play();
-            setTimeout(() => {
-                openingGif.style.display = 'none';
+        function playOpeningVideo() {
+            openingVideo.style.display = 'block';
+            openingVideo.play();
+            openingVideo.addEventListener('ended', () => {
+                openingVideo.style.display = 'none';
                 loadingMessage.style.display = 'none';
                 gameRunning = true;
-            }, 5000); // Assuming GIF duration is 5 seconds
+            });
         }
 
-        function playEndingGif() {
-            endingGif.style.display = 'block';
-            backgroundMusic.src = "music_end.mp3"; // Change to end game music
-            backgroundMusic.play(); // Start end game music
-            setTimeout(() => {
-                endingGif.style.display = 'none';
+        function playEndingVideo() {
+            endingVideo.style.display = 'block';
+            endingVideo.play();
+            endingVideo.addEventListener('ended', () => {
+                endingVideo.style.display = 'none';
                 location.reload(); // Reload the page to start over
-            }, 5000); // Assuming GIF duration is 5 seconds
+            });
         }
 
         // Move player with mouse or touch
@@ -285,7 +277,7 @@
         function endGame() {
             gameRunning = false;
             backgroundMusic.pause();
-            playEndingGif();
+            playEndingVideo();
         }
 
         function isColliding(element1, element2) {
