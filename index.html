@@ -140,6 +140,27 @@
 
         startGameButton.addEventListener('click', () => {
             startGameButton.style.display = 'none';
+            playOpeningVideo();
+        });
+
+        newGameButton.addEventListener('click', () => {
+            gameRunning = true;
+            newGameButton.style.display = 'none';
+            startGameButton.style.display = 'block';
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.style.fontSize = '18px';
+            scoreDisplay.style.backgroundColor = 'orange';
+            while (bullets.length > 0) {
+                bullets.pop().remove();
+            }
+            while (aliens.length > 0) {
+                aliens.pop().remove();
+            }
+            backgroundMusic.currentTime = 0; // Reset music to start
+        });
+
+        function playOpeningVideo() {
             openingVideo.style.display = 'block';
             openingVideo.play();
             backgroundMusic.currentTime = 0;
@@ -148,7 +169,18 @@
                 openingVideo.style.display = 'none';
                 gameRunning = true;
             };
-        });
+        }
+
+        function playEndingVideo() {
+            endingVideo.style.display = 'block';
+            endingVideo.play();
+            backgroundMusic.src = "music_end.mp3"; // Change to end game music
+            backgroundMusic.play(); // Start end game music
+            endingVideo.onended = () => {
+                endingVideo.style.display = 'none';
+                location.reload(); // Reload the page to start over
+            };
+        }
 
         // Move player with mouse or touch
         document.addEventListener('mousemove', movePlayer);
@@ -256,34 +288,9 @@
             scoreDisplay.textContent = `Final Score: ${score}`;
             backgroundMusic.pause();
             setTimeout(() => {
-                endingVideo.style.display = 'block';
-                endingVideo.play();
-                backgroundMusic.src = "music_end.mp3"; // Change to end game music
-                backgroundMusic.play(); // Start end game music
-                endingVideo.onended = () => {
-                    endingVideo.style.display = 'none';
-                    location.reload(); // Reload the page to start over
-                };
+                playEndingVideo(); // Call function to play ending video
             }, 8000); // 8 seconds delay before playing the ending video
         }
-
-        newGameButton.addEventListener('click', () => {
-            gameRunning = true;
-            newGameButton.style.display = 'none';
-            startGameButton.style.display = 'block';
-            score = 0;
-            scoreDisplay.textContent = `Score: ${score}`;
-            scoreDisplay.style.fontSize = '18px';
-            scoreDisplay.style.backgroundColor = 'orange';
-            while (bullets.length > 0) {
-                bullets.pop().remove();
-            }
-            while (aliens.length > 0) {
-                aliens.pop().remove();
-            }
-            backgroundMusic.currentTime = 0; // Reset music to start
-        });
     </script>
 </body>
 </html>
-
