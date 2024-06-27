@@ -201,7 +201,12 @@
             gameContainer.style.display = 'none'; // Hide game container
             scoreDisplay.style.display = 'none'; // Hide score display
             backgroundMusic.src = "music_end.mp3"; // Change to end game music
-            backgroundMusic.play(); // Start end game music
+            
+            // Start playing background music when ending video can play
+            endingVideo.addEventListener('canplaythrough', () => {
+                backgroundMusic.play();
+            });
+
             endingVideo.onended = () => {
                 endingVideo.style.display = 'none';
                 gameContainer.style.display = 'block';
