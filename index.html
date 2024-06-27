@@ -111,7 +111,7 @@
             width: 100vw;
             height: 100vh;
             background-color: black;
-            background-image: url('end9.gif');
+            background-image: url('end9.mp4');
             background-size: cover;
             background-position: center;
             display: none;
@@ -142,7 +142,10 @@
 
     <!-- GIFs for opening and ending -->
     <div id="openingGif"></div>
-    <div id="endingGif"></div>
+    <video id="endingVideo" controls style="display: none;">
+        <source src="end.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
     <script>
@@ -152,7 +155,7 @@
         const startGameButton = document.getElementById('startGameButton');
         const scoreDisplay = document.getElementById('score');
         const openingGif = document.getElementById('openingGif');
-        const endingGif = document.getElementById('endingGif');
+        const endingVideo = document.getElementById('endingVideo');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
         let bullets = [];
@@ -194,14 +197,14 @@
             }, 5000); // Assuming GIF duration is 5 seconds
         }
 
-        function playEndingGif() {
-            endingGif.style.display = 'block';
+        function playEndingVideo() {
+            endingVideo.style.display = 'block';
+            endingVideo.play();
+            gameContainer.style.display = 'none'; // Hide game container
+            scoreDisplay.style.display = 'none'; // Hide score display
+            newGameButton.style.display = 'block'; // Show new game button
             backgroundMusic.src = "music_end.mp3"; // Change to end game music
             backgroundMusic.play(); // Start end game music
-            setTimeout(() => {
-                endingGif.style.display = 'none';
-                location.reload(); // Reload the page to start over
-            }, 5000); // Assuming GIF duration is 5 seconds
         }
 
         // Move player with mouse or touch
@@ -310,8 +313,8 @@
             scoreDisplay.textContent = `Final Score: ${score}`;
             backgroundMusic.pause();
             setTimeout(() => {
-                playEndingGif();
-            }, 8000); // 8 seconds delay before playing the ending GIF
+                playEndingVideo();
+            }, 8000); // 8 seconds delay before playing the ending video
         }
     </script>
 </body>
