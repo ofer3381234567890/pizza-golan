@@ -177,6 +177,176 @@
     </video>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
 
-    <script src="game.js"></script>
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const player = document.getElementById('player');
+        const newGameButton = document.getElementById('newGameButton');
+        const startGameButton = document.getElementById('startGameButton');
+        const scoreDisplay = document.getElementById('score');
+        const openingSlideshow = document.getElementById('openingSlideshow');
+        const endingVideo = document.getElementById('endingVideo');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        let bullets = [];
+        let aliens = [];
+        let score = 0;
+        let gameRunning = false;
+
+        startGameButton.addEventListener('click', () => {
+            startGameButton.style.display = 'none';
+            loadingMessage.style.display = 'block';
+            playOpeningSlideshow();
+        });
+
+        newGameButton.addEventListener('click', () => {
+            gameRunning = true;
+            newGameButton.style.display = 'none';
+            startGameButton.style.display = 'block';
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.style.fontSize = '18px';
+            scoreDisplay.style.backgroundColor = 'orange';
+            while (bullets.length > 0) {
+                bullets.pop().remove();
+            }
+            while (aliens.length > 0) {
+                aliens.pop().remove();
+            }
+            backgroundMusic.currentTime = 0; // Reset music to start
+            backgroundMusic.play(); // Start background music
+        });
+
+        function playOpeningSlideshow() {
+            openingSlideshow.style.display = 'block';
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+            const images = openingSlideshow.getElementsByTagName('img');
+            let index = 0;
+            const interval = setInterval(() => {
+                images[index].style.display = 'none';
+                index = (index + 1) % images.length;
+                images[index].style.display = 'block';
+            }, 10000 / images.length); // 10 seconds divided by number of images
+            setTimeout(() => {
+                clearInterval(interval);
+                openingSlideshow.style.display = 'none';
+                loadingMessage.style.display = 'none';
+                gameRunning = true;
+            }, 10000); // 10 seconds delay
+        }
+
+        function playEndingVideo() {
+            endingVideo.style.display = 'block';
+            endingVideo.play();
+            gameContainer.style.display = 'none'; // Hide game container
+            scoreDisplay.style.display = 'none'; // Hide score display
+            newGameButton.style.display = 'block'; // Show new game button
+            setTimeout(() => {
+                endingVideo.style.display = 'none';
+                gameContainer.style.display = 'flex';
+                scoreDisplay.style.display = 'block';
+            }, endingVideo.duration * 1000); // Hide video after it ends
+        }
+
+        function shoot() {
+            if (!gameRunning) return;
+            const bullet = document.createElement('div');
+            bullet.className = 'bullet';
+            bullet.style.left = `${player.getBoundingClientRect().left + player.offsetWidth / 2}px`;
+            bullet.style.bottom = `${player.offsetHeight}px`;
+            gameContainer.appendChild(bullet);
+            bullets.push(bullet);
+
+            const bulletSpeed = 5;
+            function moveBullet() {
+                bullet.style.bottom = `${parseInt(bullet.style.bottom) + bulletSpeed}px`;
+                const bulletRect = bullet.getBoundingClientRect();
+
+                // Check for collision with aliens
+                for (let i = 0; i < aliens.length; i++) {
+                    const alien = aliens[i];
+                    const alienRect = alien.getBoundingClientRect();
+                    if (isCollision(bulletRect, alienRect)) {
+                        alien.remove();
+                        aliens.splice(i, 1);
+                        bullet.remove();
+                        bullets.splice(bullets.indexOf(bullet), 1);
+                        addScore(10); // Add score for hitting alien
+                        return;
+                    }
+                }
+
+                // Remove bullet if it goes out of bounds
+                if (parseInt(bullet.style.bottom) > window.innerHeight) {
+                    bullet.remove();
+                    bullets.splice(bullets.indexOf(bullet), 1);
+                } else {
+                    requestAnimationFrame(moveBullet);
+                }
+            }
+            requestAnimationFrame(moveBullet);
+        }
+
+        function addScore(points) {
+            score += points;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        function isCollision(rect1, rect2) {
+            return !(rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom);
+        }
+
+        function createAlien() {
+            const alien = document.createElement('div');
+            alien.className = 'alien';
+            alien.style.left = `${Math.random() * (window.innerWidth - 150)}px`;
+            alien.style.top = `${-150}px`;
+            gameContainer.appendChild(alien);
+            aliens.push(alien);
+
+            const alienSpeed = 2 + Math.random() * 3;
+            function moveAlien() {
+                if (!gameRunning) return;
+                alien.style.top = `${parseInt(alien.style.top) + alienSpeed}px`;
+                const alienRect = alien.getBoundingClientRect();
+                if (alienRect.top > window.innerHeight) {
+                    alien.remove();
+                    aliens.splice(aliens.indexOf(alien), 1);
+                    return;
+                }
+
+                // Check for collision with player
+                const playerRect = player.getBoundingClientRect();
+                if (isCollision(alienRect, playerRect)) {
+                    endGame();
+                    return;
+                }
+
+                requestAnimationFrame(moveAlien);
+            }
+            requestAnimationFrame(moveAlien);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            playEndingVideo();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === ' ' || event.key === 'Spacebar') {
+                shoot();
+            }
+        });
+
+        // Start creating aliens
+        setInterval(() => {
+            if (gameRunning) {
+                createAlien();
+            }
+        }, 2000);
+    </script>
 </body>
 </html>
