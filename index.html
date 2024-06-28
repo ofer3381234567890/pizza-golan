@@ -5,175 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>פיצה גולן - הפיצה של הצפון</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: black;
-            color: white;
-            background-size: cover;
-            background-position: center;
-            height: 100%;
-            width: 100%;
-        }
+        /* (Your existing CSS styles) */
 
-        @media (max-aspect-ratio: 9/16) {
-            body, html {
-                background-image: url('9_16bk.png');
-            }
-        }
-
-        @media (min-aspect-ratio: 16/9) {
-            body, html {
-                background-image: url('16_9bk.png');
-            }
-        }
-
-        #gameContainer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        #player {
-            position: absolute;
-            bottom: 200px; /* מרחק נכון לשחקן בנייד */
-            width: 150px;
-            height: 150px;
-            background-image: url('pizza.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            transition: transform 0.2s;
-            transform: translateX(-50%);
-        }
-
-        @media (max-width: 768px) {
-            #player {
-                width: 80px;
-                height: 80px;
-            }
-        }
-
-        .bullet {
-            position: absolute;
-            width: 10px;
-            height: 20px;
-            background-color: yellow;
-        }
-
-        .alien {
-            position: absolute;
-            width: 75px; /* גודל חיזר בנייד */
-            height: 75px; /* גודל חיזר בנייד */
-            background-image: url('bad.svg');
-            background-size: contain;
-            background-repeat: no-repeat;
-        }
-
-        #newGameButton, #startGameButton, #restartGameButton {
-            position: fixed;
-            padding: 20px 40px;
-            font-size: 24px;
-            background-color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1;
-        }
-
-        #newGameButton {
-            top: 20px;
-            right: 20px;
-        }
-
-        #startGameButton {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #restartGameButton {
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            background-color: orange;
-        }
-
-        @media (max-width: 768px) {
-            #newGameButton, #startGameButton, #restartGameButton {
-                font-size: 14px;
-                padding: 10px 20px;
-            }
-        }
-
-        #score {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: orange;
-            color: white;
-            border: none;
-            z-index: 1;
-        }
-
-        #loadingMessage {
+        #endMessage {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            padding: 20px 40px;
+            padding: 20px;
             font-size: 24px;
-            background-color: white;
-            color: black;
-            border: none;
+            background-color: orange;
+            color: white;
             display: none;
             z-index: 1;
-        }
-
-        #openingSlideshow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            display: none;
-            z-index: 100;
-        }
-
-        #openingSlideshow img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        #endingVideo {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: black;
-            display: none;
-            z-index: 101;
         }
     </style>
-    <link rel="preload" href="pizza.svg" as="image">
-    <link rel="preload" href="bad.svg" as="image">
-    <link rel="preload" href="explosion.gif" as="image">
-    <link rel="preload" href="music.mp3" as="audio">
-    <link rel="preload" href="music_end.mp3" as="audio">
-    <link rel="preload" href="end9.mp4" as="video">
+    <!-- (Your existing preload links) -->
 </head>
 <body>
     <div id="gameContainer">
@@ -202,7 +49,7 @@
         Your browser does not support the video tag.
     </video>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
-
+    <div id="endMessage">המשחק נגמר!</div>
     <script>
         const gameContainer = document.getElementById('gameContainer');
         const player = document.getElementById('player');
@@ -214,6 +61,7 @@
         const endingVideo = document.getElementById('endingVideo');
         const loadingMessage = document.getElementById('loadingMessage');
         const backgroundMusic = document.getElementById('backgroundMusic');
+        const endMessage = document.getElementById('endMessage');
         let bullets = [];
         let aliens = [];
         let score = 0;
@@ -228,6 +76,7 @@
         newGameButton.addEventListener('click', () => {
             gameRunning = true;
             newGameButton.style.display = 'none';
+            endMessage.style.display = 'none';
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
             scoreDisplay.style.fontSize = '18px';
@@ -240,7 +89,6 @@
             }
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
-            // Remove startGameButton and start the game immediately
             startGameButton.style.display = 'none';
         });
 
@@ -251,6 +99,7 @@
         function restartGame() {
             gameRunning = true;
             restartGameButton.style.display = 'none';
+            endMessage.style.display = 'none';
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
             while (bullets.length > 0) {
@@ -296,18 +145,7 @@
         }
 
         function showEndingMessage() {
-            const endingMessage = document.createElement('div');
-            endingMessage.textContent = 'המשחק נגמר!';
-            endingMessage.style.position = 'fixed';
-            endingMessage.style.top = '50%';
-            endingMessage.style.left = '50%';
-            endingMessage.style.transform = 'translate(-50%, -50%)';
-            endingMessage.style.padding = '20px';
-            endingMessage.style.fontSize = '24px';
-            endingMessage.style.backgroundColor = 'orange';
-            endingMessage.style.color = 'white';
-            endingMessage.style.zIndex = '1';
-            document.body.appendChild(endingMessage);
+            endMessage.style.display = 'block';
         }
 
         document.addEventListener('mousemove', movePlayer);
