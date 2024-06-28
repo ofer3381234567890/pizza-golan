@@ -90,7 +90,6 @@
         #newGameButton {
             top: 20px;
             right: 20px;
-            display: none;
         }
 
         #startGameButton {
@@ -229,7 +228,6 @@
         newGameButton.addEventListener('click', () => {
             gameRunning = true;
             newGameButton.style.display = 'none';
-            startGameButton.style.display = 'block';
             score = 0;
             scoreDisplay.textContent = `Score: ${score}`;
             scoreDisplay.style.fontSize = '18px';
@@ -242,6 +240,8 @@
             }
             backgroundMusic.currentTime = 0;
             backgroundMusic.play();
+            // Remove startGameButton and start the game immediately
+            startGameButton.style.display = 'none';
         });
 
         restartGameButton.addEventListener('click', () => {
